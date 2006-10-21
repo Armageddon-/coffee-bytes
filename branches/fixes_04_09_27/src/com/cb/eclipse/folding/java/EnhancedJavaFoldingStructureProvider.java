@@ -54,9 +54,7 @@ public class EnhancedJavaFoldingStructureProvider implements IJavaFoldingStructu
 	 *      org.eclipse.jface.text.source.projection.ProjectionViewer)
 	 */
 	public void install(ITextEditor editor, ProjectionViewer viewer) {
-
 		if (supports(editor)) {
-
 			this.editor = editor;
 			this.viewer = viewer;
 
@@ -64,9 +62,7 @@ public class EnhancedJavaFoldingStructureProvider implements IJavaFoldingStructu
 			this.elementChangedListener = new ElementChangedListener();
 			this.reconciler = new ProjectionChangeReconciler();
 			this.viewer.addProjectionListener(projectionListener);
-
 		}
-
 	}
 
 	/*
@@ -94,7 +90,7 @@ public class EnhancedJavaFoldingStructureProvider implements IJavaFoldingStructu
 
 		if (!isInstalled()) { return; }
 
-        if (! (editor instanceof JavaEditor)) { return; }
+        if (!supports(this.editor)) { return; }
         
 		try {
 
@@ -107,7 +103,6 @@ public class EnhancedJavaFoldingStructureProvider implements IJavaFoldingStructu
                 IWorkingCopyManager manager = JavaUI.getWorkingCopyManager();
 //				IWorkingCopyManager manager = JavaPlugin.getDefault().getWorkingCopyManager();
 				input = manager.getWorkingCopy(editor.getEditorInput());
-
 			}
 			else if (editor instanceof ClassFileEditor) {
 				IClassFileEditorInput editorInput = (IClassFileEditorInput) editor.getEditorInput();

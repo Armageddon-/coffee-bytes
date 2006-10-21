@@ -28,8 +28,6 @@ import com.cb.eclipse.folding.preferences.PreferencesTab;
  * @author RJ
  */
 public class EnhancedFoldingPreferenceBlock implements IJavaFoldingPreferenceBlock {
-
-	
 	private IPreferenceStore preferences;
 	private PreferencesMediator mediator;
 	
@@ -39,10 +37,8 @@ public class EnhancedFoldingPreferenceBlock implements IJavaFoldingPreferenceBlo
 	private Text endUserDefine;
 
 	public EnhancedFoldingPreferenceBlock() {
-		preferences = FoldingPlugin.getDefault().getPreferenceStore();
-		
+		preferences = FoldingPlugin.getDefault().getPreferenceStore();		
 	}
-
 
 	/*
 	 * (non-Javadoc)
@@ -74,7 +70,6 @@ public class EnhancedFoldingPreferenceBlock implements IJavaFoldingPreferenceBlo
 		
 		parent.pack();
 		return tabFolder;
-
 	}
 
 	/*
@@ -83,9 +78,7 @@ public class EnhancedFoldingPreferenceBlock implements IJavaFoldingPreferenceBlo
 	 * @see org.eclipse.jdt.ui.text.folding.IJavaFoldingPreferenceBlock#initialize()
 	 */
 	public void initialize() {
-
 		mediator.initialize();
-		
 	}
 	
 
@@ -111,15 +104,4 @@ public class EnhancedFoldingPreferenceBlock implements IJavaFoldingPreferenceBlo
 	public void dispose() {
 		mediator = null;
 	}
-
-	
-	
-	
-	
-
-	
-	
-	
-
-	
 }

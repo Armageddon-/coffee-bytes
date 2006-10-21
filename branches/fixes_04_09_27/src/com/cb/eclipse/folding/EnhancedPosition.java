@@ -15,18 +15,9 @@ import org.eclipse.jface.text.Position;
 public class EnhancedPosition extends Position {
 	private PositionMetadata metadata; 
 
-	
 	public EnhancedPosition(int start, int length, PositionMetadata metadata) {
 		super(start, length);
 		this.metadata = metadata;
-	}
-
-	
-
-	public String toString() {
-		StringBuffer result = new StringBuffer();
-		result.append("[").append(getOffset()).append(",").append(getLength()).append("] - Metadata: ").append(metadata);
-		return result.toString();
 	}
 
 	public int getStart() {
@@ -36,8 +27,7 @@ public class EnhancedPosition extends Position {
 	public int getEnd() {
 		return getOffset() + getLength();
 	}
-	
-	
+		
 	/**
 	 * Determines if the passed in region intersects this region.
 	 * 
@@ -77,12 +67,9 @@ public class EnhancedPosition extends Position {
 	}
 
 	public boolean isAdjacent(EnhancedPosition other) {
-		
-		return getStart() == other.getEnd() || getEnd() == other.getStart() || getEnd() == other.getEnd();
-		
+		return getStart() == other.getEnd() || getEnd() == other.getStart() || getEnd() == other.getEnd();	
 	}
-	
-		
+			
 	/**
 	 * Determines if the passed in region is contained by this region.
 	 * 
@@ -103,17 +90,23 @@ public class EnhancedPosition extends Position {
 		return contains;
 	}
 
-	
 	/**
 	 * @return Returns the metadata.
 	 */
 	public PositionMetadata getMetadata() {
 		return metadata;
 	}
+    
 	/**
 	 * @param metadata The metadata to set.
 	 */
 	public void setMetadata(PositionMetadata metadata) {
 		this.metadata = metadata;
+	}
+	
+	public String toString() {
+		StringBuffer result = new StringBuffer();
+		result.append("EP[").append(getOffset()).append(",").append(getLength()).append("] - Metadata: ").append(metadata);
+		return result.toString();
 	}
 }

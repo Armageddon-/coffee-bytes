@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.ILog;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
@@ -78,9 +79,9 @@ public class ProjectionChangeReconciler {
 	 * @param input
 	 */
 	public void initialize(ProjectionAnnotationModel model, IJavaElement input) {
-		
+        if(null == model) { return; }
+        
 		try {
-			
 			if (input instanceof ICompilationUnit) {
 				ICompilationUnit unit = (ICompilationUnit) input;
 				synchronized (unit) {
@@ -140,7 +141,6 @@ public class ProjectionChangeReconciler {
 	 *            The element to re-scan.
 	 */
 	public void reconcile(ProjectionAnnotationModel model, IJavaElement input) {
-
 		try {
 			// disable collapsing on execution to ensure that no 
 			// newly created structures (methods, types, etc) are collapsed 
@@ -326,33 +326,38 @@ public class ProjectionChangeReconciler {
 	 *             thrown by IDocument queries.
 	 */
 	private void normalizePosition(EnhancedPosition position) throws BadLocationException {
+        if(null == document) {
+          L.log(new Status(IStatus.ERROR, FoldingPlugin.PLUGIN_ID, FoldingPlugin.NULL_DOCUMENT
+                  , "NULL document in ProjectionChangeReconciler.normalizePosition [" + hashCode() + "]"
+                  , null));
+          return;
+        }
+        
 		JavaPositionMetadata metadata = (JavaPositionMetadata)position.getMetadata();
-		if(document==null) {
-//			FoldingPlugin.getDefault().getLog()
-//				.log(new Status(Status.ERROR, 
-//						"folding", 
-//						299, 
-//						"document in null in normalizePosition"
-//						, null));
-			
-			return;
-		}
-		int start = document.getLineOfOffset(position.getOffset());
-		int end = document.getLineOfOffset(position.getOffset() + position.getLength());
 
-		int offset = document.getLineOffset(start);
-
-		if (!metadata.isFilterLastLine()) {
-			end++;
-		}
-
-		int numLines = document.getNumberOfLines();
-		int safeEnd = Math.min(numLines-1, end);
-		int endOffset = document.getLineOffset(safeEnd);
-		int length = endOffset - offset;
-
-		position.setOffset(offset);
-		position.setLength(length);
+        try {
+    		int start = document.getLineOfOffset(position.getOffset());
+    		int end = document.getLineOfOffset(position.getOffset() + position.getLength());
+    
+    		int offset = document.getLineOffset(start);
+    
+    		if (!metadata.isFilterLastLine()) {
+    			end++;
+    		}
+    
+    		int numLines = document.getNumberOfLines();
+    		int safeEnd = Math.min(numLines-1, end);
+    		int endOffset = document.getLineOffset(safeEnd);
+    		int length = endOffset - offset;
+    
+    		position.setOffset(offset);
+    		position.setLength(length);
+        }
+        catch(BadLocationException blex) {
+            String msg= position.toString() + " in doc: " + document; 
+            L.log(new Status(IStatus.ERROR, FoldingPlugin.PLUGIN_ID, FoldingPlugin.BAD_LOCATION_EXCEPTION, msg, blex));
+            throw blex;
+        }
 
 	}
 

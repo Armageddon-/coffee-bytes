@@ -13,7 +13,6 @@ import org.eclipse.ui.texteditor.TextEditorAction;
  * @author R.J. Lorimer
  */
 public class FoldingAction extends TextEditorAction {
-
 	/**
 	 * @param bundle
 	 * @param prefix
@@ -22,6 +21,7 @@ public class FoldingAction extends TextEditorAction {
 	public FoldingAction(ResourceBundle bundle, String prefix, ITextEditor editor) {
 		super(bundle, prefix, editor);		
 	}
+	
 	/**
 	 * @param bundle
 	 * @param prefix
@@ -31,6 +31,4 @@ public class FoldingAction extends TextEditorAction {
 	public FoldingAction(ResourceBundle bundle, String prefix, ITextEditor editor, int style) {
 		super(bundle, prefix, editor, style);
 	}
-	
-	
 }

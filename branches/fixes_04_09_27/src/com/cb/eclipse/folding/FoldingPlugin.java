@@ -13,7 +13,6 @@ package com.cb.eclipse.folding;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
-import org.eclipse.core.runtime.IPluginDescriptor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
@@ -26,7 +25,10 @@ import com.cb.eclipse.folding.theme.Images;
  * The main plugin class for the FoldingPlugin.
  */
 public class FoldingPlugin extends AbstractUIPlugin {
-
+    public static final String PLUGIN_ID= "com.cb.eclipse.folding";
+    public static final int BAD_LOCATION_EXCEPTION= 7007;
+    public static final int NULL_DOCUMENT = 7008;
+    
 	// The shared instance.
 	private static FoldingPlugin plugin;
 	//Resource bundle.
@@ -38,29 +40,11 @@ public class FoldingPlugin extends AbstractUIPlugin {
 	
 	private JavaSettings javaDomain;
 
-	/**
-	 * The constructor.
-	 */
-	public FoldingPlugin(IPluginDescriptor desc) {
-		super(desc);
-		try {
-			
-			plugin = this;
-			
-
-			
-			images = new Images();
-			Defaults.applyDefaults(getPrefs());
-			javaDomain = new JavaSettings(getPrefs());
-		}
-		catch(Exception e) {
-			System.out.println(e.getMessage());
-			e.printStackTrace();		
-		}
-		
-
-	}
-
+    public FoldingPlugin() {
+        super();
+        plugin= this;
+    }
+    
 	public static void restoreToDefaults() {
 		Defaults.restoreDefaults(getPrefs());
 	}
@@ -69,8 +53,10 @@ public class FoldingPlugin extends AbstractUIPlugin {
 	 * This method is called upon plug-in activation
 	 */
 	public void start(BundleContext context) throws Exception {
-		
 		super.start(context);
+        Defaults.applyDefaults(getPreferenceStore());
+        javaDomain = new JavaSettings(getPreferenceStore());
+        images = new Images();
 	}
 
 	/**
@@ -117,8 +103,6 @@ public class FoldingPlugin extends AbstractUIPlugin {
 		boolean result = FoldingPlugin.getPrefs().getBoolean(key);
 		return result;
 	}
-	
-	
 	
 
 	/**

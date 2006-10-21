@@ -68,7 +68,7 @@ public class JavaProjectionCalculator {
 		Map result = new HashMap();
 		
 		try {
-			findAnnotations((IJavaElement) parentElement, result);
+			findAnnotations(parentElement, result);
 		}
 		catch (JavaModelException e) {
 //			L.log(new Status(Status.ERROR, "cb.eclipse.folding", 9999, "findAnnotations", null));
