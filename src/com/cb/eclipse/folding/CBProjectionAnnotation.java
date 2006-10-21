@@ -3,9 +3,7 @@
  */
 package com.cb.eclipse.folding;
 
-import org.eclipse.jface.text.source.ImageUtilities;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;

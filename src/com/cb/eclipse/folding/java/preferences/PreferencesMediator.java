@@ -68,8 +68,6 @@ public class PreferencesMediator {
 		endUserDefineField = field;
 	}
 	
-	
-	
 	public void initialize() {
 		Iterator it = initialCheckBoxes.entrySet().iterator();
 		while (it.hasNext()) {
