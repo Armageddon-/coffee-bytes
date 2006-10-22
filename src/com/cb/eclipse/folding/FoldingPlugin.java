@@ -28,6 +28,8 @@ public class FoldingPlugin extends AbstractUIPlugin {
     public static final String PLUGIN_ID= "com.cb.eclipse.folding";
     public static final int BAD_LOCATION_EXCEPTION= 7007;
     public static final int NULL_DOCUMENT = 7008;
+    public static final int INVALID_INPUT = 7009;
+    public static final int COMPUTE_PROJECTIONS_CALL = 7010;
     
 	// The shared instance.
 	private static FoldingPlugin plugin;

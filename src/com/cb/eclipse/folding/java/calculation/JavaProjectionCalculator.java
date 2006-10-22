@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.runtime.ILog;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IParent;
@@ -101,9 +102,21 @@ public class JavaProjectionCalculator {
 		try {
 			regions = computeProjections(elem);
 		}
-		catch(RuntimeException e) {
-			e.printStackTrace();
-			throw e;
+        catch(JavaModelException jmex) {
+            L.log(new Status(IStatus.ERROR, FoldingPlugin.PLUGIN_ID, FoldingPlugin.COMPUTE_PROJECTIONS_CALL
+                    , "Element:" + elem, jmex));
+            throw jmex;
+        }
+        catch(InvalidInputException iiex) {
+            L.log(new Status(IStatus.ERROR, FoldingPlugin.PLUGIN_ID, FoldingPlugin.COMPUTE_PROJECTIONS_CALL
+                    , "Element:" + elem, iiex));
+            throw iiex;
+        }
+		catch(RuntimeException cause) {
+            L.log(new Status(IStatus.ERROR, FoldingPlugin.PLUGIN_ID, FoldingPlugin.COMPUTE_PROJECTIONS_CALL
+                    , "Element:" + elem, cause));
+
+			throw cause;
 		}
 		
 		// Recursively process
@@ -227,22 +240,19 @@ public class JavaProjectionCalculator {
 			
 			while (true) {
 				int token = -1;
+                boolean handle= false;
 				try {
 					token = scanner.getNextToken();
-				} catch(InvalidInputException iie) {
-					/*L.log(new Status(Status.ERROR, 
-							"cb.eclipse.folding", 
-							9998, 
-							"computeProjections [SRC="+contents
-							+";start="+start
-							+";end="+end,
-							null));*/
+                    handle= true;
+				} 
+                catch(InvalidInputException iie) {
+                    String msg= "Content:[" + contents + "];token:" + token + ";start:" + start + ";end:" + end;
 					L.log(new Status(Status.ERROR, 
-							"cb.eclipse.folding", 
-							9998, 
-							"computeProjections [InvalidInputException]",
-							null));
-					throw iie;
+							FoldingPlugin.PLUGIN_ID, 
+							FoldingPlugin.INVALID_INPUT, 
+							"JavaProjectionCalculator.computeProjections:" + msg,
+							iie));
+//					throw iie;
 				}
 
 				start = shift + scanner.getCurrentTokenStartPosition();
@@ -252,8 +262,9 @@ public class JavaProjectionCalculator {
 					break; // end case.
 				}
 
-				strategy.handle(token, start, end, elem);
-
+                if(handle) {
+                    strategy.handle(token, start, end, elem);
+                }
 			}
 
 			strategy.postScan(start, elem);
