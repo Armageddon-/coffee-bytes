@@ -246,13 +246,16 @@ public class JavaProjectionCalculator {
                     handle= true;
 				} 
                 catch(InvalidInputException iie) {
-                    String msg= "Content:[" + contents + "];token:" + token + ";start:" + start + ";end:" + end;
-					L.log(new Status(Status.ERROR, 
-							FoldingPlugin.PLUGIN_ID, 
-							FoldingPlugin.INVALID_INPUT, 
-							"JavaProjectionCalculator.computeProjections:" + msg,
-							iie));
+//                    String msg= "Content:[" + contents + "];token:" + token + ";start:" + start + ";end:" + end;
+//					L.log(new Status(Status.ERROR, 
+//							FoldingPlugin.PLUGIN_ID, 
+//							FoldingPlugin.INVALID_INPUT, 
+//							"JavaProjectionCalculator.computeProjections:" + msg,
+//							iie));
 //					throw iie;
+					// FIXME: I think that a return NULL would be enough; the source is an unstable state
+					// so we should not spend time on it anymore
+                    return null;
 				}
 
 				start = shift + scanner.getCurrentTokenStartPosition();

@@ -10,12 +10,14 @@
  *******************************************************************************/
 package com.cb.eclipse.folding.java;
 
+import org.eclipse.core.runtime.ILog;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.ElementChangedEvent;
 import org.eclipse.jdt.core.IElementChangedListener;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaElementDelta;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.javaeditor.ClassFileEditor;
 import org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor;
 import org.eclipse.jdt.internal.ui.javaeditor.IClassFileEditorInput;
@@ -30,6 +32,7 @@ import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import com.cb.eclipse.folding.FoldingPlugin;
 import com.cb.eclipse.folding.java.calculation.ProjectionChangeReconciler;
 
 /**
@@ -39,7 +42,10 @@ import com.cb.eclipse.folding.java.calculation.ProjectionChangeReconciler;
  * @author RJ
  */
 public class EnhancedJavaFoldingStructureProvider implements IJavaFoldingStructureProvider {
+    private static final ILog L = FoldingPlugin.getDefault().getLog();
 
+    private IDocumentProvider provider;
+    private IDocument document;
 	private ITextEditor editor;
 	private IJavaElement input;
 	private ProjectionViewer viewer;
@@ -57,6 +63,8 @@ public class EnhancedJavaFoldingStructureProvider implements IJavaFoldingStructu
 		if (supports(editor)) {
 			this.editor = editor;
 			this.viewer = viewer;
+            this.provider= editor.getDocumentProvider();
+            this.document= this.provider.getDocument(editor.getEditorInput());
 
 			this.projectionListener = new ProjectionListener();
 			this.elementChangedListener = new ElementChangedListener();
@@ -72,32 +80,36 @@ public class EnhancedJavaFoldingStructureProvider implements IJavaFoldingStructu
 	 */
 	public void uninstall() {
 		if (isInstalled()) {
-			projectionListener.projectionDisabled();
-			viewer.removeProjectionListener(projectionListener);
-			projectionListener = null;
-			viewer = null;
-			editor = null;
+			this.projectionListener.projectionDisabled();
+			this.viewer.removeProjectionListener(projectionListener);
+			this.projectionListener = null;
+			this.viewer = null;
+			this.editor = null;
+            this.input= null;
+            this.document= null;
+            this.provider= null;
 		}
 
 	}
 
+    private boolean hasDocument() {
+        return this.document != null;
+    }
+    
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see org.eclipse.jdt.ui.text.folding.IJavaFoldingStructureProvider#initialize()
 	 */
 	public void initialize() {
-
 		if (!isInstalled()) { return; }
 
         if (!supports(this.editor)) { return; }
+
+        if (!hasDocument()) { return; }
         
 		try {
-
-			IDocumentProvider provider = editor.getDocumentProvider();
-			IDocument doc = provider.getDocument(editor.getEditorInput());
-
-			cacheDoc(doc);
+			cacheDoc(this.document);
 
 			if (editor instanceof CompilationUnitEditor) {
                 IWorkingCopyManager manager = JavaUI.getWorkingCopyManager();
@@ -113,7 +125,7 @@ public class EnhancedJavaFoldingStructureProvider implements IJavaFoldingStructu
 				ProjectionAnnotationModel model = (ProjectionAnnotationModel) editor.getAdapter(ProjectionAnnotationModel.class);
 				
 				if(null != model) {
-					reconciler.initialize(model, (IJavaElement) input);
+					reconciler.initialize(model, input);
 				}
 			}
 
@@ -125,7 +137,6 @@ public class EnhancedJavaFoldingStructureProvider implements IJavaFoldingStructu
 
 	public void release() {
 		releaseDoc();
-		JavaCore.removeElementChangedListener(elementChangedListener);
 	}
 
 	protected boolean supports(ITextEditor editor) {
@@ -138,7 +149,6 @@ public class EnhancedJavaFoldingStructureProvider implements IJavaFoldingStructu
 
 	private void cacheDoc(IDocument doc) {
 		reconciler.setCurrentDocument(doc);
-
 	}
 
 	private void releaseDoc() {
@@ -149,14 +159,16 @@ public class EnhancedJavaFoldingStructureProvider implements IJavaFoldingStructu
 	private class ElementChangedListener implements IElementChangedListener {
 
 		public void elementChanged(ElementChangedEvent event) {
+            if(!hasDocument()) return;
+            
 			ProjectionAnnotationModel model = (ProjectionAnnotationModel) editor.getAdapter(ProjectionAnnotationModel.class);
 			
-			if (!isInstalled() ||  model == null || !isValidEvent(event.getDelta()))
+			if (!isInstalled() ||  model == null || !isValidEvent(event.getDelta())) {
 				return;
+            }
+
 			try {
-				IDocumentProvider provider = editor.getDocumentProvider();
-				cacheDoc(provider.getDocument(editor.getEditorInput()));
-						
+				cacheDoc(EnhancedJavaFoldingStructureProvider.this.document);
 				reconciler.reconcile(model, (IJavaElement) input);
 			}
 			finally {
@@ -190,27 +202,18 @@ public class EnhancedJavaFoldingStructureProvider implements IJavaFoldingStructu
 	}
 
 	private class ProjectionListener implements IProjectionListener {
-
-		public ProjectionListener() {
-
-		}
-
 		public void projectionEnabled() {
-
 			projectionDisabled();
 
 			if (supports(editor)) {
 				initialize();
 				JavaCore.addElementChangedListener(elementChangedListener);
 			}
-
 		}
 
 		public void projectionDisabled() {
-
+            JavaCore.removeElementChangedListener(elementChangedListener);
 			release();
 		}
-
 	}
-
 }
