@@ -81,6 +81,15 @@ public class ProjectionChangeReconciler {
 	public void initialize(ProjectionAnnotationModel model, IJavaElement input) {
         if(null == model) { return; }
         
+        if(null == document) {
+            RuntimeException re= new RuntimeException();
+            re.fillInStackTrace();
+            L.log(new Status(IStatus.ERROR, FoldingPlugin.PLUGIN_ID, FoldingPlugin.NULL_DOCUMENT
+                    , "NULL document in ProjectionChangeReconciler.normalizePosition [" + hashCode() + "]"
+                    , re));
+            return;
+        }
+        
 		try {
 			if (input instanceof ICompilationUnit) {
 				ICompilationUnit unit = (ICompilationUnit) input;
@@ -141,6 +150,15 @@ public class ProjectionChangeReconciler {
 	 *            The element to re-scan.
 	 */
 	public void reconcile(ProjectionAnnotationModel model, IJavaElement input) {
+        if(null == document) {
+            RuntimeException re= new RuntimeException();
+            re.fillInStackTrace();
+            L.log(new Status(IStatus.ERROR, FoldingPlugin.PLUGIN_ID, FoldingPlugin.NULL_DOCUMENT
+                    , "NULL document in ProjectionChangeReconciler.normalizePosition [" + hashCode() + "]"
+                    , re));
+            return;
+        }
+
 		try {
 			// disable collapsing on execution to ensure that no 
 			// newly created structures (methods, types, etc) are collapsed 
@@ -327,17 +345,19 @@ public class ProjectionChangeReconciler {
 	 */
 	private void normalizePosition(EnhancedPosition position) throws BadLocationException {
         if(null == document) {
-          L.log(new Status(IStatus.ERROR, FoldingPlugin.PLUGIN_ID, FoldingPlugin.NULL_DOCUMENT
-                  , "NULL document in ProjectionChangeReconciler.normalizePosition [" + hashCode() + "]"
-                  , null));
-          return;
+            return;
         }
         
 		JavaPositionMetadata metadata = (JavaPositionMetadata)position.getMetadata();
 
+        int positionOffset= -1;
         try {
     		int start = document.getLineOfOffset(position.getOffset());
-    		int end = document.getLineOfOffset(position.getOffset() + position.getLength());
+            positionOffset= document.getLength() > position.getOffset() + position.getLength()
+                ? position.getOffset() + position.getLength()
+                : document.getLength();
+                
+    		int end = document.getLineOfOffset(positionOffset);
     
     		int offset = document.getLineOffset(start);
     
@@ -354,7 +374,7 @@ public class ProjectionChangeReconciler {
     		position.setLength(length);
         }
         catch(BadLocationException blex) {
-            String msg= position.toString() + " in doc: " + document; 
+            String msg= position.toString() + " with positionOffset: " + positionOffset + " in doc: \n" + document.get(); 
             L.log(new Status(IStatus.ERROR, FoldingPlugin.PLUGIN_ID, FoldingPlugin.BAD_LOCATION_EXCEPTION, msg, blex));
             throw blex;
         }
