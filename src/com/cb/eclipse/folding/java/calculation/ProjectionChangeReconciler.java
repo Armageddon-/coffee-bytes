@@ -310,7 +310,9 @@ public class ProjectionChangeReconciler {
 			Map.Entry entry = (Map.Entry) positions.next();
 			EnhancedPosition pos = (EnhancedPosition) entry.getValue();
 
-			normalizePosition(pos);
+			if(!normalizePosition(pos)) {
+                positions.remove();
+            }
 			
 		}
 		applyFilters(positionMap);
@@ -343,15 +345,22 @@ public class ProjectionChangeReconciler {
 	 * @throws BadLocationException
 	 *             thrown by IDocument queries.
 	 */
-	private void normalizePosition(EnhancedPosition position) throws BadLocationException {
+	private boolean normalizePosition(EnhancedPosition position) throws BadLocationException {
         if(null == document) {
-            return;
+            return true;
         }
         
 		JavaPositionMetadata metadata = (JavaPositionMetadata)position.getMetadata();
 
         int positionOffset= -1;
         try {
+            // TODO: figure out why this is happening
+            if(document.getLength() < position.getOffset()) {
+                String msg= "Position " + position.toString() + " is outside the document " + document.getLength(); 
+                L.log(new Status(IStatus.ERROR, FoldingPlugin.PLUGIN_ID, FoldingPlugin.BAD_LOCATION_EXCEPTION, msg, null));
+                return false;
+            }
+            
     		int start = document.getLineOfOffset(position.getOffset());
             positionOffset= document.getLength() > position.getOffset() + position.getLength()
                 ? position.getOffset() + position.getLength()
@@ -372,13 +381,14 @@ public class ProjectionChangeReconciler {
     
     		position.setOffset(offset);
     		position.setLength(length);
+            return true;
         }
         catch(BadLocationException blex) {
             String msg= position.toString() + " with positionOffset: " + positionOffset + " in doc: \n" + document.get(); 
             L.log(new Status(IStatus.ERROR, FoldingPlugin.PLUGIN_ID, FoldingPlugin.BAD_LOCATION_EXCEPTION, msg, blex));
-            throw blex;
         }
-
+        
+        return false;
 	}
 
 	
